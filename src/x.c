@@ -51,6 +51,8 @@ typedef struct con_state {
     bool need_reparent;
     xcb_window_t old_frame;
 
+    bool need_reshape;
+
     Rect rect;
     Rect window_rect;
 
@@ -799,6 +801,34 @@ void x_push_node(Con *con) {
         con->ignore_unmap++;
         DLOG("ignore_unmap for reparenting of con %p (win 0x%08x) is now %d\n",
              con, con->window->id, con->ignore_unmap);
+    }
+
+    /* Update the window shape if needed. */
+    state->need_reshape = true; /* FIXME: Where should this be set? It needs to be set when the window is resized, when it gets assigned to another container(?), and when we get a shape notify saying that the window shape changed. */
+    if (shape_xfixes_supported && state->need_reshape && con->window != NULL) {
+        xcb_xfixes_region_t region = xcb_generate_id(conn);
+        xcb_xfixes_region_t region2 = xcb_generate_id(conn);
+
+        /* Create a region from the window's shape */
+        xcb_xfixes_create_region_from_window(conn, region, con->window->id, XCB_SHAPE_SK_BOUNDING);
+
+        /* Offset the region so that it suits the con's coordinate system */
+        xcb_xfixes_translate_region(conn, region, -con->window_rect.x, -con->window_rect.y);
+
+        /* Create a region for the titlebars and add it to the other region */
+        xcb_rectangle_t rectangles[] = {
+            /* FIXME: How do I get the size of window decorations? */
+            { .x = 0, .y = 0, .width = con->rect.width, .height = 42 }
+        };
+        xcb_xfixes_create_region(conn, region2, sizeof(rectangles) / sizeof(rectangles[0]), rectangles);
+
+        xcb_xfixes_union_region(conn, region, region2, region);
+        xcb_xfixes_set_window_shape_region(conn, con->frame.id, XCB_SHAPE_SK_BOUNDING, 0, 0, region);
+
+        xcb_xfixes_destroy_region(conn, region);
+        xcb_xfixes_destroy_region(conn, region2);
+
+        state->need_reshape = false;
     }
 
     /* The pixmap of a borderless leaf container will not be used except

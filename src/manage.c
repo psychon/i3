@@ -574,6 +574,12 @@ void manage_window(xcb_window_t window, xcb_get_window_attributes_cookie_t cooki
      * cleanup) */
     xcb_change_save_set(conn, XCB_SET_MODE_INSERT, window);
 
+    if (shape_xfixes_supported)
+        xcb_shape_select_input(conn, con->window->id, 1);
+    /* TODO: Actually handle shape notify events. We care about
+     * shape_base+XCB_SHAPE_NOTIFY (with shape_kind == XCB_SHAPE_SK_BOUNDING)
+     * and if we get such an event, we have to reshape. */
+
     /* Check if any assignments match */
     run_assignments(cwindow);
 

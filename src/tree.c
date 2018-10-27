@@ -247,6 +247,8 @@ bool tree_close_internal(Con *con, kill_window_t kill_window, bool dont_kill_par
              * unmapped windows around and don’t expect them to suddenly be
              * mapped. See https://bugs.i3wm.org/1617 */
             xcb_change_save_set(conn, XCB_SET_MODE_DELETE, con->window->id);
+            if (shape_xfixes_supported)
+                xcb_shape_select_input(conn, con->window->id, 0);
 
             /* Ignore X11 errors for the ReparentWindow request.
              * X11 Errors are returned when the window was already destroyed */
