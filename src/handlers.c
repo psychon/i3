@@ -20,6 +20,7 @@
 int randr_base = -1;
 int xkb_base = -1;
 int xkb_current_group;
+int shape_base = -1;
 
 /* After mapping/unmapping windows, a notify event is generated. However, we don’t want it,
    since it’d trigger an infinite loop of switching between the different windows when

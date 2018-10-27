@@ -16,6 +16,8 @@
 
 #include <xcb/xcb_keysyms.h>
 #include <xcb/xkb.h>
+#include <xcb/shape.h>
+#include <xcb/xfixes.h>
 
 #include <X11/XKBlib.h>
 
@@ -70,7 +72,7 @@ extern uint8_t root_depth;
 extern xcb_visualid_t visual_id;
 extern xcb_colormap_t colormap;
 
-extern bool xcursor_supported, xkb_supported;
+extern bool xcursor_supported, xkb_supported, shape_xfixes_supported;
 extern xcb_window_t root;
 extern struct ev_loop *main_loop;
 extern bool only_check_config;

@@ -89,6 +89,7 @@ struct ws_assignments_head ws_assignments = TAILQ_HEAD_INITIALIZER(ws_assignment
 /* We hope that those are supported and set them to true */
 bool xcursor_supported = true;
 bool xkb_supported = true;
+bool shape_xfixes_supported = true;
 
 bool force_xinerama = false;
 
@@ -622,6 +623,10 @@ int main(int argc, char *argv[]) {
         xcb_set_root_cursor(XCURSOR_CURSOR_POINTER);
 
     const xcb_query_extension_reply_t *extreply;
+    xcb_prefetch_extension_data(conn, &xcb_xkb_id);
+    xcb_prefetch_extension_data(conn, &xcb_xfixes_id);
+    xcb_prefetch_extension_data(conn, &xcb_shape_id);
+
     extreply = xcb_get_extension_data(conn, &xcb_xkb_id);
     xkb_supported = extreply->present;
     if (!extreply->present) {
@@ -681,6 +686,30 @@ int main(int argc, char *argv[]) {
 
         free(pcf_reply);
         xkb_base = extreply->first_event;
+    }
+
+    extreply = xcb_get_extension_data(conn, &xcb_xfixes_id);
+    shape_xfixes_supported = extreply->present;
+    extreply = xcb_get_extension_data(conn, &xcb_shape_id);
+    shape_xfixes_supported &= extreply->present;
+    if (shape_xfixes_supported) {
+        shape_base = extreply->first_event;
+
+        xcb_xfixes_query_version_cookie_t xfixes_cookie;
+
+        /* We want to use xcb_xfixes_set_window_shape_region, which was added in
+         * version 2 of the XFixes extension.
+         */
+        xfixes_cookie = xcb_xfixes_query_version(conn, 2, 0);
+
+        xcb_xfixes_query_version_reply_t *xfixes_version =
+            xcb_xfixes_query_version_reply(conn, xfixes_cookie, NULL);
+
+        if (!xfixes_version || xfixes_version->major_version < 2)
+            shape_xfixes_supported = false;
+        free(xfixes_version);
+
+        /* Shape 1.0 is good enough, so no need to query the version */
     }
 
     restore_connect();
