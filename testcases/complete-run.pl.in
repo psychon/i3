@@ -130,7 +130,7 @@ if ($options{xvfb}) {
 	    # parent when ready, so that the wait call will be interrupted.  We
 	    # can’t implement this in Perl, as Perl’s waitpid transparently
 	    # handles -EINTR.
-	    exec('/bin/sh', '-c', qq|trap "exit" INT; trap : USR1; (trap '' USR1; exec Xvfb :$n -screen 0 640x480x8 -nolisten tcp) & PID=\$!; wait; if ! kill -0 \$PID 2>/dev/null; then echo 1:\$PID > $path; else echo 0:\$PID > $path; wait \$PID; fi|);
+	    exec('/bin/sh', '-c', qq|trap "exit" INT; trap : USR1; (trap '' USR1; exec Xvfb :$n -screen 0 640x480x8 -listen tcp) & PID=\$!; wait; if ! kill -0 \$PID 2>/dev/null; then echo 1:\$PID > $path; else echo 0:\$PID > $path; wait \$PID; fi|);
 	    die "exec: $!";
 	}
 	chomp(my $kill = slurp($path));
@@ -139,6 +139,18 @@ if ($options{xvfb}) {
 	next unless $code eq '0';
 
 	$ENV{DISPLAY} = ":$n";
+	say "Running tests under Xvfb display $ENV{DISPLAY}";
+
+	# Start TCP proxy
+	my $m = $n + 1;
+	my $pid = fork // die "fork: $!";
+	if ($pid == 0) {
+	    # Child
+	    exec('/tmp/tcp-proxy.py', 6000 + $n, 6000 + $m, "0.5");
+	    die "exec: $!";
+	}
+
+	$ENV{DISPLAY} = ":$m";
 	say "Running tests under Xvfb display $ENV{DISPLAY}";
 
 	push(@CLEANUP, sub {
