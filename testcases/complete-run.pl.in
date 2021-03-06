@@ -146,12 +146,13 @@ if ($options{xvfb}) {
 	my $pid2 = fork // die "fork: $!";
 	if ($pid2 == 0) {
 	    # Child
-	    exec('/tmp/tcp-proxy.py', 6000 + $m, 6000 + $n, "0.05");
+	    exec('/tmp/tcp-proxy.py', 6000 + $m, 6000 + $n, "0.10");
 	    die "exec: $!";
 	}
 
 	$ENV{DISPLAY_I3} = ":$m";
-	say "Running tests under Xvfb display $ENV{DISPLAY}";
+	say "Running i3 under Xvfb display $ENV{DISPLAY_I3}";
+	push(@displays, ":$m");
 
 	push(@CLEANUP, sub {
 	    kill(15, $xvfbpid);
