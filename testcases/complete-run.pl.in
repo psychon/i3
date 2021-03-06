@@ -143,8 +143,8 @@ if ($options{xvfb}) {
 
 	# Start TCP proxy
 	my $m = $n + 1;
-	my $pid = fork // die "fork: $!";
-	if ($pid == 0) {
+	my $pid2 = fork // die "fork: $!";
+	if ($pid2 == 0) {
 	    # Child
 	    exec('/tmp/tcp-proxy.py', 6000 + $n, 6000 + $m, "0.5");
 	    die "exec: $!";
@@ -155,6 +155,9 @@ if ($options{xvfb}) {
 
 	push(@CLEANUP, sub {
 	    kill(15, $xvfbpid);
+	});
+	push(@CLEANUP, sub {
+	    kill(15, $pid2);
 	});
 	last;
     }
