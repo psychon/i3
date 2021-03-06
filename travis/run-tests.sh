@@ -3,7 +3,7 @@
 set -e
 set -x
 
-cp tcp-proxy.py /tmp/
+cp tests/tcp-proxy.py /tmp/
 
 cd build
 
