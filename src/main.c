@@ -559,7 +559,7 @@ int main(int argc, char *argv[]) {
 
     LOG("i3 %s starting\n", i3_version);
 
-    conn = xcb_connect(NULL, &conn_screen);
+    conn = xcb_connect(getenv("DISPLAY_I3"), &conn_screen);
     if (xcb_connection_has_error(conn))
         errx(EXIT_FAILURE, "Cannot open display");
 

@@ -914,7 +914,7 @@ sub launch_with_config {
     my $cv = AnyEvent->condvar;
     $i3_pid = activate_i3(
         unix_socket_path => "$tmp_socket_path-activation",
-        display => $ENV{DISPLAY_I3},
+        display => $ENV{DISPLAY},
         configfile => $tmpfile,
         outdir => $ENV{OUTDIR},
         testname => $ENV{TESTNAME},
