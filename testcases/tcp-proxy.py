@@ -59,7 +59,11 @@ class Forwarder:
             data = self.read.recv(4096)
             self.pending_data.append((time.time() + self.delay, data))
             if not data:
-                self.write.shutdown(socket.SHUT_WR)
+                try:
+                    self.write.shutdown(socket.SHUT_WR)
+                except OSError as e:
+                    print("Error during socket.shutdown():")
+                    print(e)
                 return True
 
 
