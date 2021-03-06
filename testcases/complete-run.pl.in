@@ -150,7 +150,7 @@ if ($options{xvfb}) {
 	    die "exec: $!";
 	}
 
-	$ENV{DISPLAY} = ":$m";
+	$ENV{DISPLAY_I3} = ":$m";
 	say "Running tests under Xvfb display $ENV{DISPLAY}";
 
 	push(@CLEANUP, sub {
