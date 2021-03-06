@@ -146,7 +146,7 @@ if ($options{xvfb}) {
 	my $pid2 = fork // die "fork: $!";
 	if ($pid2 == 0) {
 	    # Child
-	    exec('/tmp/tcp-proxy.py', 6000 + $n, 6000 + $m, "0.5");
+	    exec('/tmp/tcp-proxy.py', 6000 + $m, 6000 + $n, "0.5");
 	    die "exec: $!";
 	}
 
