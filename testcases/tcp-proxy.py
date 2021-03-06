@@ -56,15 +56,24 @@ class Forwarder:
                 self.pending_data.pop(0)
 
         if self.read.fileno() in readable:
-            data = self.read.recv(4096)
+            try:
+                data = self.read.recv(4096)
+            except OSError as e:
+                print("Error during socket.recv():")
+                print(e)
+                self.shutdown_write()
+                return True
             self.pending_data.append((time.time() + self.delay, data))
             if not data:
-                try:
-                    self.write.shutdown(socket.SHUT_WR)
-                except OSError as e:
-                    print("Error during socket.shutdown():")
-                    print(e)
+                self.shutdown_write()
                 return True
+
+    def shutdown_write(self):
+        try:
+            self.write.shutdown(socket.SHUT_WR)
+        except OSError as e:
+            print("Error during socket.shutdown():")
+            print(e)
 
 
 def main(listen_port, target_port, delay):
