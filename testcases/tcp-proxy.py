@@ -48,7 +48,17 @@ class Forwarder:
     def process(self, readable, writable):
         if self.write.fileno() in writable:
             delay, data = self.pending_data[0]
-            sent = self.write.send(data)
+            try:
+                sent = self.write.send(data)
+            except OSError as e:
+                print("Error during socket.recv():")
+                print(e)
+                try:
+                    self.write.shutdown(socket.SHUT_RD)
+                except OSError as e:
+                    print("Error during socket.shutdown(RD):")
+                    print(e)
+                return True
             data = data[sent:]
             if data:
                 self.pending_data[0] = (delay, data)
@@ -72,7 +82,7 @@ class Forwarder:
         try:
             self.write.shutdown(socket.SHUT_WR)
         except OSError as e:
-            print("Error during socket.shutdown():")
+            print("Error during socket.shutdown(WR):")
             print(e)
 
 
