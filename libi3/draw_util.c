@@ -62,7 +62,7 @@ void draw_util_surface_free(xcb_connection_t *conn, surface_t *surface) {
     cairo_status_t status = cairo_status(surface->cr);
     if (status != CAIRO_STATUS_SUCCESS) {
         LOG("Found cairo context in an error status while freeing, error %d is %s",
-                status, cairo_status_to_string(status));
+            status, cairo_status_to_string(status));
     }
 
     xcb_free_gc(conn, surface->gc);
